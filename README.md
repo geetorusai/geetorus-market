@@ -1,43 +1,114 @@
-# Geetorus
+# 🛒 Geetorus Market
 
-Geetorus marketplace for buying and selling AI-agent companies.
+> **The Premier Marketplace for AI Agent Teams & Company Blueprints** — Discover, preview, and deploy pre-configured AI workforces into your Geetorus control plane with one click.
 
-- [Geetorus](https://geetorus.ing)
-- [Geetorus Documentation](https://docs.geetorus.ing)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F)](https://orm.drizzle.team/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Geetorus](https://img.shields.io/badge/Orchestrated_by-Geetorus-blue)](https://github.com/geetorusai/geetorus)
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+---
 
-## Getting Started
+## 🌟 Overview
 
-First, run the development server:
+**Geetorus Market** is the official hub for buying, sharing, and installing battle-tested AI agent companies. Instead of building agent organizations from scratch, browse curated teams — complete with organizational hierarchies, specialized role prompts, tool configurations, and automated routines.
+
+- **🏢 Complete Companies**: Security auditing firms, game development studios, science research labs, and full-stack software agencies.
+- **⚡ 1-Click Import**: Deploy directly to your local or cloud Geetorus instance via `geetorusai company import` or `companies.sh`.
+- **📊 Org Chart Previews**: Inspect reporting lines, agent roles, and capabilities before installing.
+- **🛠️ Tools & Skills Included**: Every company bundle packages domain-specific tools, MCP server bindings, and routine automations.
+- **🚀 Creator Publishing**: Export your own high-performing agent teams and publish them to the community.
+
+---
+
+## 🚀 Quickstart
+
+### Prerequisites
+- **Node.js**: `>= 20.0.0`
+- **PostgreSQL Database** (or Supabase connection string)
+
+### 1. Installation
+
+```bash
+git clone https://github.com/geetorusai/geetorus-market.git
+cd geetorus-market
+npm install
+```
+
+### 2. Environment Configuration
+
+Create a `.env.local` file:
+
+```env
+# Database connection
+DATABASE_URL=postgresql://postgres:password@localhost:5432/geetorus_market
+
+# Authentication (Better Auth)
+BETTER_AUTH_SECRET=your_32_character_hex_secret
+BETTER_AUTH_URL=http://localhost:3000
+
+# Optional Supabase integration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### 3. Database Migration
+
+```bash
+# Push schema migrations
+npx drizzle-kit push
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the marketplace.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 How to Install Market Companies in Geetorus
 
-## Learn More
+Once you find a company on Geetorus Market:
 
-To learn more about Next.js, take a look at the following resources:
+### Via Geetorus CLI:
+```bash
+# Direct import from GitHub or Market bundle
+geetorusai company import ./trail-of-bits-security
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Via `companies.sh`:
+```bash
+# Install directly from the open standard catalog
+npx companies.sh add geetorusai/companies/gstack
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🏗️ Architecture & Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Framework** | Next.js 16 (App Router) | Modern server components and edge rendering |
+| **UI & Styling** | React 19 + Tailwind CSS 4 | Responsive, sleek marketplace catalog and previews |
+| **Database** | PostgreSQL + Drizzle ORM | High-performance catalog, reviews, and transaction records |
+| **Auth** | Better Auth | Secure session and OAuth authentication for publishers and buyers |
+| **Storage** | Supabase | Storage for company blueprint bundles, logos, and preview screenshots |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🤝 Contributing
+
+Contributions to Geetorus Market are welcome! You can:
+- Submit new company blueprints via PR to [`geetorus-companies`](https://github.com/geetorusai/geetorus-companies).
+- Improve the marketplace UI, search filters, and checkout flows.
+
+---
+
+## 📜 License
+
+Geetorus Market is open-source software licensed under the [MIT License](LICENSE).
