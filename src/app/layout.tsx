@@ -20,7 +20,7 @@ const bodyFont = Space_Grotesk({
   display: "swap",
 });
 
-// Munder Difflin monospace — JetBrains Mono
+// Geetorus 2D monospace — JetBrains Mono
 const monoFont = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
@@ -50,7 +50,7 @@ export default function RootLayout({
           fontFamily: "var(--font-body)",
         }}
       >
-        {/* Munder Difflin × Drago warm grid background */}
+        {/* Geetorus 2D warm grid background */}
         <div
           style={{
             position: "fixed",
