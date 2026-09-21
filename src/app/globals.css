@@ -1,28 +1,382 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   GEETORUS MARKET — Design System
+   Inspired by:
+   Result: engineering-credible, warm-dark, retro-precise.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* 1. Google Fonts — MUST be first @import */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* 2. Tailwind */
 @import "tailwindcss";
 
+/* ─── Design Tokens ─────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────── */
 :root {
-  --background: #f4efe6;
-  --foreground: #1d1b17;
+  /* ── Base surfaces (warm ink dark) ── */
+  --bg-base:        #1a1320;   /* Munder Difflin --ink / --terminal */
+  --bg-surface:     #1f1826;   /* slightly lighter ink */
+  --bg-elevated:    #231c2b;   /* raised panels */
+  --bg-card:        #1d1625;   /* card bg */
+
+  /* ── Borders (warm tan, from Munder Difflin --line / --line-strong) ── */
+  --border-subtle:  #2a2133;   /* very subtle */
+  --border-muted:   #3a3040;   /* Munder Difflin --3a3040 */
+  --border-accent:  #d6c59e;   /* Munder Difflin --line-strong */
+  --border-warm:    #e6d9bc;   /* Munder Difflin --line */
+
+  /* ── Text ── */
+  --text-primary:   #f3ead3;   /* Munder Difflin --terminal-ink */
+  --text-secondary: #d6c59e;   /* warm tan */
+  --text-muted:     #8a8274;   /* Munder Difflin --faint */
+  --text-ghost:     #5a5347;   /* Munder Difflin --muted */
+
+  /* ── Accent: Drago gold from Munder Difflin ── */
+  --accent:         #ffca54;   /* Munder Difflin --accent */
+  --accent-hover:   #ffd97e;   /* Munder Difflin --accent-hover */
+  --accent-soft:    rgba(255, 202, 84, 0.12); /* Munder Difflin --accent-soft */
+  --accent-border:  rgba(255, 202, 84, 0.28);
+
+  /* ── Sky blue (secondary accent from Munder Difflin --sky) ── */
+  --sky:            #4f9faf;
+  --sky-light:      #dceff7;
+
+  /* ── Fonts ──
+     Plus Jakarta Sans (Drago heading font) for display
+     Space Grotesk (Drago secondary) for body
+     JetBrains Mono (Munder Difflin --mono) for code / metadata */
+  --font-display: "Plus Jakarta Sans", "Space Grotesk", system-ui, sans-serif;
+  --font-body:    "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* ── Drago retro shadow system ── */
+  --shadow-sm:   4px 4px 0px 0px #000000;   /* Drago --retro-shadow-sm */
+  --shadow-md:   8px 8px 0px 0px #000000;   /* Drago --retro-shadow */
+  --shadow-warm: 4px 4px 0px 0px #1a1320;   /* warm ink shadow variant */
+
+  /* ── Border width (Drago --retro-border-width) ── */
+  --border-width: 2px;                        /* softer than Drago's 4px */
+
+  /* ── Radii (Munder Difflin --radius: 14px, --radius-sm: 10px) ── */
+  --radius-sm:  6px;
+  --radius-md:  10px;   /* Munder Difflin --radius-sm */
+  --radius-lg:  14px;   /* Munder Difflin --radius */
+  --radius-xl:  18px;
+  --radius-pill: 999px;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
-  --font-serif: var(--font-heading);
+/* ─── Reset & Base ──────────────────────────────────────────────────────────*/
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  min-height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading), serif;
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-primary);
 }
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Tailwind Theme Bridge ─────────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --font-sans:        var(--font-body);
+  --font-mono:        var(--font-mono);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--bg-base); }
+::-webkit-scrollbar-thumb  { background: var(--border-muted); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-ghost); }
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(255, 202, 84, 0.25);
+  color: var(--text-primary);
+}
+
+/* ─── Focus ──────────────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.gt-container {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+/* ─── Card — retro-brutalist with warm shadow ────────────────────────────── */
+.gt-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-muted);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-warm);
+  transition:
+    border-color var(--transition-base),
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+.gt-card:hover {
+  border-color: var(--border-accent);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+/* ─── Badge (retro tag) ──────────────────────────────────────────────────── */
+.gt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+/* ─── Tag pill ──────────────────────────────────────────────────────────── */
+.gt-tag {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-ghost);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+
+.gt-tag-accent {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+/* ─── Section label ─────────────────────────────────────────────────────── */
+.gt-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+/* Primary — Drago white retro button */
+.gt-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #1a1320;
+  border: var(--border-width) solid #000000;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 9px 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.gt-btn-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+.gt-btn-primary:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+
+/* Ghost — transparent with warm border */
+.gt-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: var(--border-width) solid var(--border-muted);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-warm);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 9px 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.gt-btn-ghost:hover {
+  border-color: var(--border-accent);
+  color: var(--text-primary);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 0 var(--border-accent);
+}
+
+/* Accent (sky blue) */
+.gt-btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(79, 159, 175, 0.12);
+  color: var(--sky);
+  border: var(--border-width) solid rgba(79, 159, 175, 0.35);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+.gt-btn-accent:hover {
+  background: rgba(79, 159, 175, 0.2);
+  border-color: rgba(79, 159, 175, 0.6);
+  transform: translate(-2px, -2px);
+}
+
+/* ─── Input ──────────────────────────────────────────────────────────────── */
+.gt-input {
+  background: var(--bg-elevated);
+  border: var(--border-width) solid var(--border-muted);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  outline: none;
+  padding: 9px 14px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+}
+.gt-input::placeholder { color: var(--text-ghost); font-family: var(--font-mono); letter-spacing: 0.04em; }
+.gt-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 202, 84, 0.12);
+}
+
+/* ─── Select ─────────────────────────────────────────────────────────────── */
+.gt-select {
+  appearance: none;
+  background: var(--bg-elevated);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8274' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: var(--border-width) solid var(--border-muted);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  outline: none;
+  padding: 9px 30px 9px 14px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.gt-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 202, 84, 0.12);
+}
+.gt-select option { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* ─── Pulse dot ──────────────────────────────────────────────────────────── */
+.gt-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Skeleton shimmer ───────────────────────────────────────────────────── */
+.gt-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-card) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ─── Grid / noise background ────────────────────────────────────────────── */
+.gt-grid-bg {
+  background-image:
+    linear-gradient(rgba(214, 197, 158, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(214, 197, 158, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────────── */
+.gt-divider {
+  border: none;
+  border-top: var(--border-width) solid var(--border-subtle);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.animate-slide-up { animation: slide-up 0.45s ease both; }

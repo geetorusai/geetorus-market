@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { slugify } from "@/lib/slug";
 
 type ListingType =
@@ -57,8 +57,8 @@ const CATEGORY_OPTIONS: Array<{ label: string; value: string }> = [
 const SORT_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Most popular", value: "popular" },
   { label: "Newest", value: "newest" },
-  { label: "Price: low to high", value: "price_asc" },
-  { label: "Price: high to low", value: "price_desc" },
+  { label: "Price: low → high", value: "price_asc" },
+  { label: "Price: high → low", value: "price_desc" },
   { label: "Highest rated", value: "rating" },
 ];
 
@@ -71,92 +71,129 @@ function listingTypeLabel(type: ListingType): string {
   return type.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function parseRating(rating: number | string | null): number | null {
-  if (typeof rating === "number" && Number.isFinite(rating)) {
-    return rating;
-  }
+function listingTypeTag(type: ListingType): string {
+  const map: Record<ListingType, string> = {
+    team_blueprint: "TEAM_BP",
+    agent_blueprint: "AGENT",
+    skill: "SKILL",
+    governance_template: "GOV_TPL",
+  };
+  return map[type] ?? type.toUpperCase();
+}
 
+function parseRating(rating: number | string | null): number | null {
+  if (typeof rating === "number" && Number.isFinite(rating)) return rating;
   if (typeof rating === "string") {
     const parsed = Number.parseFloat(rating);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
+    if (Number.isFinite(parsed)) return parsed;
   }
-
   return null;
 }
 
-function formatRating(rating: number | null): string {
-  if (rating === null) {
-    return "No ratings";
-  }
-
-  return `${rating.toFixed(1)} / 5`;
-}
-
 function centsToDollarInput(centsValue: string | null): string {
-  if (!centsValue) {
-    return "";
-  }
-
+  if (!centsValue) return "";
   const cents = Number.parseInt(centsValue, 10);
-  if (!Number.isFinite(cents)) {
-    return "";
-  }
-
+  if (!Number.isFinite(cents)) return "";
   const dollars = cents / 100;
   return Number.isInteger(dollars) ? String(dollars) : dollars.toFixed(2);
 }
 
-function OrgChartPreview({ agentCount }: { agentCount: number | null }) {
+/** Dark blueprint structure preview */
+function BlueprintPreview({ agentCount }: { agentCount: number | null }) {
   const count = Math.max(2, Math.min(agentCount ?? 3, 5));
   const leaves = Math.max(2, count - 1);
 
   return (
-    <div className="relative h-24 rounded-xl border border-stone-300 bg-gradient-to-b from-stone-100 to-amber-50 px-4 py-3">
-      <div className="mx-auto flex h-full w-full max-w-44 flex-col justify-between">
-        <div className="mx-auto h-6 w-16 rounded-full border border-stone-400 bg-stone-900 text-center text-[10px] font-semibold leading-6 text-stone-100">
-          Lead
-        </div>
-        <div className="relative mx-auto h-6 w-32">
-          <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-stone-400" />
-          <div className="absolute left-3 right-3 top-3 h-px bg-stone-400" />
-          <div className="flex items-end justify-between pt-3">
-            {Array.from({ length: leaves }).map((_, index) => (
-              <span
-                key={`leaf-${index}`}
-                className="h-4 w-8 rounded-full border border-stone-400 bg-white text-center text-[9px] font-semibold leading-4 text-stone-700"
-              >
-                A{index + 1}
-              </span>
-            ))}
+    <div
+      style={{
+        height: "80px",
+        borderRadius: "var(--radius-md)",
+        border: "1px solid var(--border-subtle)",
+        background: "var(--bg-base)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "12px",
+        gap: "6px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Root node */}
+      <div
+        style={{
+          background: "var(--text-primary)",
+          color: "var(--bg-base)",
+          borderRadius: "3px",
+          fontSize: "0.6rem",
+          fontFamily: "var(--font-mono)",
+          fontWeight: 600,
+          padding: "2px 10px",
+          letterSpacing: "0.08em",
+        }}
+      >
+        LEAD
+      </div>
+      {/* Connector line */}
+      <div style={{ width: 1, height: 8, background: "var(--border-accent)" }} />
+      {/* Leaf nodes */}
+      <div style={{ display: "flex", gap: "6px" }}>
+        {Array.from({ length: leaves }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-muted)",
+              borderRadius: "3px",
+              fontSize: "0.55rem",
+              fontFamily: "var(--font-mono)",
+              fontWeight: 500,
+              padding: "1px 6px",
+              color: "var(--text-muted)",
+              letterSpacing: "0.06em",
+            }}
+          >
+            A{i + 1}
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
+/** Loading skeleton */
 function BrowseSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: "1rem",
+      }}
+    >
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
-          key={`skeleton-${index}`}
-          className="animate-pulse rounded-2xl border border-stone-200 bg-white/70 p-5"
+          key={i}
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: "1.25rem",
+          }}
         >
-          <div className="h-24 rounded-xl bg-stone-200" />
-          <div className="mt-4 h-4 w-24 rounded bg-stone-200" />
-          <div className="mt-3 h-6 w-3/4 rounded bg-stone-200" />
-          <div className="mt-2 h-4 w-full rounded bg-stone-200" />
-          <div className="mt-1 h-4 w-2/3 rounded bg-stone-200" />
+          <div className="gt-skeleton" style={{ height: 80, marginBottom: "1rem" }} />
+          <div className="gt-skeleton" style={{ height: 12, width: "40%", marginBottom: "0.5rem" }} />
+          <div className="gt-skeleton" style={{ height: 18, width: "75%", marginBottom: "0.5rem" }} />
+          <div className="gt-skeleton" style={{ height: 14, width: "90%", marginBottom: "0.25rem" }} />
+          <div className="gt-skeleton" style={{ height: 14, width: "60%" }} />
         </div>
       ))}
     </div>
   );
 }
 
-export default function BrowsePage() {
+function BrowseContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -188,54 +225,34 @@ export default function BrowsePage() {
       setError(null);
 
       const params = new URLSearchParams(queryString);
-      if (!params.get("sort")) {
-        params.set("sort", "popular");
-      }
-      if (!params.get("page")) {
-        params.set("page", "1");
-      }
-      if (!params.get("limit")) {
-        params.set("limit", "12");
-      }
+      if (!params.get("sort")) params.set("sort", "popular");
+      if (!params.get("page")) params.set("page", "1");
+      if (!params.get("limit")) params.set("limit", "12");
 
       try {
         const response = await fetch(`/api/listings?${params.toString()}`, {
           cache: "no-store",
         });
-
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
         const payload = (await response.json()) as ListingsResponse;
-        if (!ignore) {
-          setResult(payload);
-        }
+        if (!ignore) setResult(payload);
       } catch (loadError) {
         if (!ignore) {
-          const message =
-            loadError instanceof Error
-              ? loadError.message
-              : "Failed to load listings.";
-          setError(message);
+          setError(
+            loadError instanceof Error ? loadError.message : "Failed to load listings."
+          );
         }
       } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
+        if (!ignore) setIsLoading(false);
       }
     }
 
     void loadListings();
-
-    return () => {
-      ignore = true;
-    };
+    return () => { ignore = true; };
   }, [queryString]);
 
   function submitFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     const data = new FormData(event.currentTarget);
     const next = new URLSearchParams();
     next.set("sort", String(data.get("sort") || "popular"));
@@ -243,40 +260,27 @@ export default function BrowsePage() {
     next.set("page", "1");
 
     for (const key of ["search", "type", "category"]) {
-      const rawValue = String(data.get(key) || "").trim();
-      if (rawValue.length > 0) {
-        next.set(key, rawValue);
-      }
+      const v = String(data.get(key) || "").trim();
+      if (v.length > 0) next.set(key, v);
     }
 
     for (const key of ["minPrice", "maxPrice"]) {
-      const rawValue = String(data.get(key) || "").trim();
-      if (!rawValue) {
-        continue;
-      }
-
-      const dollars = Number.parseFloat(rawValue);
-      if (Number.isFinite(dollars) && dollars >= 0) {
-        next.set(key, String(Math.round(dollars * 100)));
-      }
+      const v = String(data.get(key) || "").trim();
+      if (!v) continue;
+      const dollars = Number.parseFloat(v);
+      if (Number.isFinite(dollars) && dollars >= 0) next.set(key, String(Math.round(dollars * 100)));
     }
 
     router.push(`${pathname}?${next.toString()}`);
   }
 
-  function resetFilters() {
-    router.push(pathname);
-  }
+  function resetFilters() { router.push(pathname); }
 
   function gotoPage(page: number) {
     const next = new URLSearchParams(searchParams.toString());
     next.set("page", String(page));
-    if (!next.get("sort")) {
-      next.set("sort", "popular");
-    }
-    if (!next.get("limit")) {
-      next.set("limit", "12");
-    }
+    if (!next.get("sort")) next.set("sort", "popular");
+    if (!next.get("limit")) next.set("limit", "12");
     router.push(`${pathname}?${next.toString()}`);
   }
 
@@ -288,212 +292,397 @@ export default function BrowsePage() {
     totalPages: 1,
   };
 
+  const inputStyle: React.CSSProperties = {
+    background: "var(--bg-elevated)",
+    border: "1px solid var(--border-muted)",
+    borderRadius: "var(--radius-md)",
+    color: "var(--text-primary)",
+    fontFamily: "var(--font-sans)",
+    fontSize: "0.8125rem",
+    outline: "none",
+    padding: "9px 14px",
+    transition: "border-color 150ms",
+  };
+
+  const selectStyle: React.CSSProperties = {
+    ...inputStyle,
+    appearance: "none" as const,
+    backgroundImage:
+      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 10px center",
+    paddingRight: "30px",
+    cursor: "pointer",
+  };
+
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-      <section className="rounded-3xl border border-stone-300 bg-gradient-to-br from-stone-900 via-stone-900 to-amber-900 p-7 text-stone-100">
-        <p className="text-xs uppercase tracking-[0.24em] text-stone-300">GeeTorus Marketplace</p>
-        <h1 className="mt-3 font-serif text-4xl">Browse listings</h1>
-        <p className="mt-3 max-w-3xl text-sm text-stone-200 sm:text-base">
-          Filter team blueprints, agent packs, skills, and governance templates for your Geetorus company.
-        </p>
-      </section>
+    <div style={{ padding: "3rem 0 5rem" }}>
+      <div className="gt-container" style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
 
-      <section className="rounded-3xl border border-stone-300 bg-white/75 p-5 shadow-sm">
-        <form onSubmit={submitFilters} className="grid gap-3 lg:grid-cols-6">
-          <input
-            type="search"
-            name="search"
-            defaultValue={filters.search}
-            placeholder="Search title or description"
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2 lg:col-span-2"
-          />
-
-          <select
-            name="type"
-            defaultValue={filters.type}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2"
-          >
-            {TYPE_OPTIONS.map((option) => (
-              <option key={option.value || "all-types"} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="category"
-            defaultValue={filters.category}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2"
-          >
-            {CATEGORY_OPTIONS.map((option) => (
-              <option key={option.value || "all-categories"} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="sort"
-            defaultValue={filters.sort}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2"
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              className="inline-flex flex-1 justify-center rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:bg-stone-800"
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="inline-flex rounded-xl border border-stone-300 bg-stone-50 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400"
-            >
-              Reset
-            </button>
-          </div>
-
-          <input
-            type="number"
-            min={0}
-            name="minPrice"
-            defaultValue={filters.minPrice}
-            placeholder="Min $"
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2"
-          />
-
-          <input
-            type="number"
-            min={0}
-            name="maxPrice"
-            defaultValue={filters.maxPrice}
-            placeholder="Max $"
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-amber-300 transition focus:ring-2"
-          />
-        </form>
-      </section>
-
-      {isLoading ? (
-        <BrowseSkeleton />
-      ) : error ? (
-        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-900">
-          <h2 className="font-serif text-2xl">Unable to load listings</h2>
-          <p className="mt-2 text-sm">{error}</p>
-        </section>
-      ) : listings.length === 0 ? (
-        <section className="rounded-2xl border border-stone-300 bg-stone-50 p-8 text-center">
-          <h2 className="font-serif text-3xl text-stone-900">No listings match these filters</h2>
-          <p className="mt-3 text-sm text-stone-700">
-            Try widening your category or price range to discover more blueprints.
+        {/* ── Page header ── */}
+        <div>
+          <p className="gt-label" style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="gt-dot" />
+            GEETORUS MARKETPLACE
           </p>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="mt-5 inline-flex rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:bg-stone-800"
+          <h1
+            style={{
+              fontSize: "clamp(1.75rem, 4vw, 3rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              marginBottom: "0.5rem",
+            }}
           >
-            Clear filters
-          </button>
-        </section>
-      ) : (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-stone-700">
-              Showing {(pagination.page - 1) * pagination.limit + 1}-
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
+            Browse listings
+          </h1>
+          <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", maxWidth: "52ch" }}>
+            Filter team blueprints, agent packs, skills, and governance templates for your Geetorus company.
+          </p>
+        </div>
+
+        {/* ── Filters ── */}
+        <div
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-lg)",
+            padding: "1.25rem",
+          }}
+        >
+          <form onSubmit={submitFilters}>
+            {/* Search row */}
+            <div style={{ marginBottom: "0.75rem", position: "relative" }}>
+              <svg
+                style={{
+                  position: "absolute",
+                  left: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                }}
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--text-muted)"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                name="search"
+                defaultValue={filters.search}
+                placeholder="SEARCH BLUEPRINTS..."
+                style={{
+                  ...inputStyle,
+                  paddingLeft: "36px",
+                  width: "100%",
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.04em",
+                }}
+              />
+              <span
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.65rem",
+                  color: "var(--text-ghost)",
+                  background: "var(--bg-base)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "4px",
+                  padding: "2px 6px",
+                  letterSpacing: "0.04em",
+                  pointerEvents: "none",
+                }}
+              >
+                /
+              </span>
+            </div>
+
+            {/* Filter row */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                gap: "0.5rem",
+                alignItems: "end",
+              }}
+            >
+              <select name="type" defaultValue={filters.type} style={selectStyle}>
+                {TYPE_OPTIONS.map((o) => (
+                  <option key={o.value || "all-types"} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+
+              <select name="category" defaultValue={filters.category} style={selectStyle}>
+                {CATEGORY_OPTIONS.map((o) => (
+                  <option key={o.value || "all-cats"} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+
+              <select name="sort" defaultValue={filters.sort} style={selectStyle}>
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="number"
+                min={0}
+                name="minPrice"
+                defaultValue={filters.minPrice}
+                placeholder="Min $"
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                min={0}
+                name="maxPrice"
+                defaultValue={filters.maxPrice}
+                placeholder="Max $"
+                style={inputStyle}
+              />
+
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button type="submit" className="gt-btn-primary" style={{ flex: 1 }}>
+                  Apply
+                </button>
+                <button type="button" onClick={resetFilters} className="gt-btn-ghost" style={{ flexShrink: 0 }}>
+                  ↺
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* ── Results ── */}
+        {isLoading ? (
+          <BrowseSkeleton />
+        ) : error ? (
+          <div
+            style={{
+              background: "rgba(255,59,48,0.06)",
+              border: "1px solid rgba(255,59,48,0.25)",
+              borderRadius: "var(--radius-lg)",
+              padding: "1.5rem",
+            }}
+          >
+            <p className="gt-label" style={{ color: "rgba(255,100,100,0.8)", marginBottom: "0.5rem" }}>
+              ERROR / FAILED TO LOAD
+            </p>
+            <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>
+              {error}
             </p>
           </div>
+        ) : listings.length === 0 ? (
+          <div
+            style={{
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-lg)",
+              padding: "3rem",
+              textAlign: "center",
+            }}
+          >
+            <p className="gt-label" style={{ marginBottom: "1rem" }}>NO RESULTS</p>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+              No listings match these filters
+            </h2>
+            <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+              Try widening your category or price range to discover more blueprints.
+            </p>
+            <button type="button" onClick={resetFilters} className="gt-btn-ghost">
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {/* Count */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                SHOWING {(pagination.page - 1) * pagination.limit + 1}–
+                {Math.min(pagination.page * pagination.limit, pagination.total)} OF {pagination.total}
+              </p>
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {listings.map((listing) => {
-              const rating = parseRating(listing.rating);
-              const creatorName = listing.creatorName || "Unknown creator";
+            {/* Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: "1rem",
+              }}
+            >
+              {listings.map((listing) => {
+                const rating = parseRating(listing.rating);
+                const creatorName = listing.creatorName ?? "Unknown creator";
 
-              return (
-                <article
-                  key={listing.id}
-                  className="rounded-2xl border border-stone-300 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <OrgChartPreview agentCount={listing.agentCount} />
-
-                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500">
-                    {listingTypeLabel(listing.type)}
-                  </p>
-                  <h2 className="mt-2 line-clamp-2 font-serif text-2xl leading-tight text-stone-900">
-                    <Link href={`/listings/${listing.slug}`} className="hover:underline">
-                      {listing.title}
-                    </Link>
-                  </h2>
-                  <p className="mt-2 line-clamp-2 text-sm text-stone-700">
-                    {listing.tagline || "No tagline provided."}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
-                    <span className="rounded-full bg-stone-100 px-2 py-1">
-                      👥 {listing.agentCount ?? "?"} agents
-                    </span>
-                    <span className="rounded-full bg-stone-100 px-2 py-1">
-                      ⬇ {listing.installCount} installs
-                    </span>
-                    <span className="rounded-full bg-stone-100 px-2 py-1">
-                      ★ {formatRating(rating)} ({listing.reviewCount})
-                    </span>
-                  </div>
-
-                  <div className="mt-5 flex items-center justify-between">
-                    <Link
-                      href={`/creators/${slugify(creatorName)}`}
-                      className="text-sm text-stone-700 underline-offset-4 hover:underline"
-                    >
-                      By {creatorName}
-                    </Link>
-                    <p className="text-lg font-semibold text-stone-900">
-                      {listing.price > 0
-                        ? moneyFormatter.format(listing.price / 100)
-                        : "Free"}
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/listings/${listing.slug}`}
-                    className="mt-4 inline-flex w-full justify-center rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:bg-stone-800"
+                return (
+                  <article
+                    key={listing.id}
+                    className="gt-card"
+                    style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}
                   >
-                    {listing.price > 0 ? "Buy / Install" : "Install"}
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
+                    {/* Blueprint preview */}
+                    <BlueprintPreview agentCount={listing.agentCount} />
 
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              onClick={() => gotoPage(Math.max(1, pagination.page - 1))}
-              disabled={pagination.page <= 1}
-              className="rounded-xl border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 disabled:cursor-not-allowed disabled:opacity-40"
+                    {/* Type badge */}
+                    <span className="gt-badge">{listingTypeTag(listing.type)}</span>
+
+                    {/* Title */}
+                    <div>
+                      <h2
+                        style={{
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          letterSpacing: "-0.01em",
+                          lineHeight: 1.3,
+                          marginBottom: "0.375rem",
+                        }}
+                      >
+                        <Link
+                          href={`/listings/${listing.slug}`}
+                          style={{ color: "var(--text-primary)", textDecoration: "none" }}
+                        >
+                          {listing.title}
+                        </Link>
+                      </h2>
+                      <p
+                        style={{
+                          fontSize: "0.8125rem",
+                          color: "var(--text-muted)",
+                          lineHeight: 1.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {listing.tagline ?? "No description provided."}
+                      </p>
+                    </div>
+
+                    {/* Metadata tags */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                      <span className="gt-tag">{listing.agentCount ?? "?"} agents</span>
+                      <span className="gt-tag">{listing.installCount} installs</span>
+                      {rating !== null && (
+                        <span className="gt-tag gt-tag-accent">★ {rating.toFixed(1)}</span>
+                      )}
+                    </div>
+
+                    {/* Footer row */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: "auto",
+                        paddingTop: "0.875rem",
+                        borderTop: "1px solid var(--border-subtle)",
+                      }}
+                    >
+                      <Link
+                        href={`/creators/${slugify(creatorName)}`}
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "var(--text-muted)",
+                          textDecoration: "none",
+                          fontFamily: "var(--font-mono)",
+                          letterSpacing: "0.02em",
+                        }}
+                      >
+                        @{slugify(creatorName)}
+                      </Link>
+                      <p
+                        style={{
+                          fontSize: "0.9375rem",
+                          fontWeight: 700,
+                          letterSpacing: "-0.02em",
+                          color: listing.price === 0 ? "var(--accent-green)" : "var(--text-primary)",
+                          fontFamily: "var(--font-mono)",
+                        }}
+                      >
+                        {listing.price > 0 ? moneyFormatter.format(listing.price / 100) : "FREE"}
+                      </p>
+                    </div>
+
+                    {/* CTA */}
+                    <Link
+                      href={`/listings/${listing.slug}`}
+                      className={listing.price > 0 ? "gt-btn-primary" : "gt-btn-accent"}
+                      style={{ width: "100%", fontSize: "0.8rem" }}
+                    >
+                      {listing.price > 0 ? "Buy / Install" : "Install free"}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <path d="m7 17 10-10M7 7h10v10" />
+                      </svg>
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingTop: "0.5rem",
+              }}
             >
-              Previous
-            </button>
-            <p className="text-sm text-stone-700">
-              Page {pagination.page} of {Math.max(1, pagination.totalPages)}
-            </p>
-            <button
-              type="button"
-              onClick={() => gotoPage(Math.min(pagination.totalPages, pagination.page + 1))}
-              disabled={pagination.page >= pagination.totalPages}
-              className="rounded-xl border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-400 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-            </button>
+              <button
+                type="button"
+                onClick={() => gotoPage(Math.max(1, pagination.page - 1))}
+                disabled={pagination.page <= 1}
+                className="gt-btn-ghost"
+                style={{ opacity: pagination.page <= 1 ? 0.35 : 1 }}
+              >
+                ← Previous
+              </button>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>
+                PAGE {pagination.page} / {Math.max(1, pagination.totalPages)}
+              </p>
+              <button
+                type="button"
+                onClick={() => gotoPage(Math.min(pagination.totalPages, pagination.page + 1))}
+                disabled={pagination.page >= pagination.totalPages}
+                className="gt-btn-ghost"
+                style={{ opacity: pagination.page >= pagination.totalPages ? 0.35 : 1 }}
+              >
+                Next →
+              </button>
+            </div>
           </div>
-        </section>
-      )}
-    </main>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="gt-container" style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
+          <BrowseSkeleton />
+        </div>
+      }
+    >
+      <BrowseContent />
+    </Suspense>
   );
 }

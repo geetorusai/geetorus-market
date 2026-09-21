@@ -128,157 +128,145 @@ export function ListingBlueprintSections({
     const isSelected = slug === selectedSlug;
 
     return (
-      <div key={slug} className="space-y-3" style={{ marginLeft: depth ? 20 : 0 }}>
+      <div key={slug} style={{ marginLeft: depth ? 20 : 0, display: "flex", flexDirection: "column", gap: "10px" }}>
         <button
           type="button"
           onClick={() => setSelectedSlug(slug)}
-          className={`relative w-full rounded-2xl border px-4 py-3 text-left transition ${
-            isSelected
-              ? "border-stone-900 bg-stone-900 text-stone-100"
-              : "border-stone-300 bg-stone-50/80 text-stone-900 hover:border-stone-500"
-          }`}
+          style={{
+            position: "relative",
+            width: "100%",
+            textAlign: "left",
+            background: isSelected ? "var(--bg-elevated)" : "var(--bg-base)",
+            border: `1px solid ${isSelected ? "var(--text-muted)" : "var(--border-subtle)"}`,
+            borderRadius: "var(--radius-md)",
+            padding: "10px 14px",
+            cursor: "pointer",
+            transition: "border-color 150ms, background 150ms",
+          }}
         >
-          {depth > 0 ? (
-            <span className="absolute -left-4 top-1/2 h-px w-3 -translate-y-1/2 bg-stone-300" />
-          ) : null}
-          <p className="text-[11px] uppercase tracking-[0.2em] opacity-70">
+          {depth > 0 && (
+            <span style={{ position: "absolute", left: -16, top: "50%", width: 10, height: 1, background: "var(--border-accent)", transform: "translateY(-50%)" }} />
+          )}
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "4px" }}>
             {titleFromRole(agent.role)}
           </p>
-          <p className="mt-1 font-semibold">{agent.name}</p>
-          <p className="text-xs opacity-80">{agent.title || "Team member"}</p>
+          <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>{agent.name}</p>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{agent.title ?? "Team member"}</p>
         </button>
 
-        {children.length ? (
-          <div className="ml-3 space-y-3 border-l border-dashed border-stone-300 pl-4">
+        {children.length > 0 && (
+          <div style={{ marginLeft: 12, borderLeft: "1px dashed var(--border-muted)", paddingLeft: 16, display: "flex", flexDirection: "column", gap: "10px" }}>
             {children.map((childSlug) => renderNode(childSlug, depth + 1, nextTrail))}
           </div>
-        ) : null}
+        )}
       </div>
     );
   };
 
   return (
     <>
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-stone-50/90 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">2. Org Chart</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Interactive team hierarchy</h2>
-        </div>
+      <section style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-xl)", padding: "2rem" }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "0.75rem" }}>02 — ORG CHART</p>
+        <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.75rem)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "1.25rem" }}>Interactive team hierarchy</h2>
 
-        <div className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="space-y-4 rounded-2xl border border-stone-300 bg-white/85 p-4">
+        <div style={{ display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: "1.25rem" }}>
+          <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {hierarchy.roots.map((rootSlug) => renderNode(rootSlug, 0, new Set()))}
           </div>
-          <aside className="rounded-2xl border border-stone-300 bg-white/85 p-5">
+          <aside style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1.25rem" }}>
             {selectedAgent ? (
-              <div className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-stone-500">Selected Agent</p>
-                <h3 className="font-serif text-2xl text-stone-900">{selectedAgent.name}</h3>
-                <p className="text-sm font-semibold text-stone-700">
-                  {selectedAgent.title || titleFromRole(selectedAgent.role)}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--text-muted)" }}>SELECTED AGENT</p>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, letterSpacing: "-0.02em" }}>{selectedAgent.name}</h3>
+                <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)" }}>
+                  {selectedAgent.title ?? titleFromRole(selectedAgent.role)}
                 </p>
-                <p className="text-sm text-stone-700">
-                  {selectedAgent.capabilities || "Capabilities not provided for this role yet."}
+                <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                  {selectedAgent.capabilities ?? "Capabilities not provided for this role yet."}
                 </p>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between gap-3 border-t border-stone-200 pt-2">
-                    <dt className="text-stone-500">Adapter</dt>
-                    <dd className="font-medium text-stone-900">
-                      {selectedAgent.adapterType || "Not specified"}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-3 border-t border-stone-200 pt-2">
-                    <dt className="text-stone-500">Monthly Budget</dt>
-                    <dd className="font-medium text-stone-900">
-                      {formatMoney(selectedAgent.budgetMonthlyCents)}
-                    </dd>
-                  </div>
+                <dl style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                  {[
+                    { label: "Adapter", value: selectedAgent.adapterType ?? "Not specified" },
+                    { label: "Monthly Budget", value: formatMoney(selectedAgent.budgetMonthlyCents) },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "8px", fontSize: "0.75rem", borderTop: "1px solid var(--border-subtle)", padding: "7px 0" }}>
+                      <dt style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>{label}</dt>
+                      <dd style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", fontWeight: 500 }}>{value}</dd>
+                    </div>
+                  ))}
                 </dl>
               </div>
             ) : (
-              <p className="text-sm text-stone-600">No agent data available for this blueprint.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>// No agent data available.</p>
             )}
           </aside>
         </div>
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-white/85 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">
-            3. Agent Breakdown
-          </p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Expandable role details</h2>
-        </div>
-        <div className="space-y-4">
+      <section style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-xl)", padding: "2rem" }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "0.75rem" }}>03 — AGENT BREAKDOWN</p>
+        <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.75rem)", fontWeight: 700, letterSpacing: "-0.03em", marginBottom: "1.25rem" }}>Expandable role details</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {agents.map((agent) => {
             const isExpanded = expandedAgents.has(agent.slug);
             return (
-              <article key={agent.slug} className="rounded-2xl border border-stone-300 bg-stone-50/90">
+              <article key={agent.slug} style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
                 <button
                   type="button"
                   onClick={() => toggleExpanded(agent.slug)}
-                  className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
+                  style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "12px 16px", textAlign: "left" as const, background: "transparent", border: "none", cursor: "pointer" }}
                 >
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "4px" }}>
                       {titleFromRole(agent.role)}
                     </p>
-                    <h3 className="mt-1 font-serif text-2xl text-stone-900">{agent.name}</h3>
-                    <p className="text-sm text-stone-700">{agent.title || "No title provided"}</p>
+                    <h3 style={{ fontSize: "0.9375rem", fontWeight: 600, letterSpacing: "-0.01em", color: "var(--text-primary)", marginBottom: "2px" }}>{agent.name}</h3>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{agent.title ?? "No title provided"}</p>
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">
-                    {isExpanded ? "Collapse" : "Expand"}
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "var(--text-muted)", flexShrink: 0 }}>
+                    {isExpanded ? "[ COLLAPSE ]" : "[ EXPAND ]"}
                   </span>
                 </button>
 
-                {isExpanded ? (
-                  <div className="grid gap-4 border-t border-stone-200 px-4 py-4 text-sm sm:grid-cols-2">
+                {isExpanded && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", borderTop: "1px solid var(--border-subtle)", padding: "1rem 1.25rem", background: "var(--bg-elevated)" }}>
                     <div>
-                      <p className="font-semibold text-stone-800">Capabilities</p>
-                      <p className="mt-1 text-stone-700">
-                        {agent.capabilities || "No capabilities listed for this agent."}
+                      <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem", fontFamily: "var(--font-mono)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Capabilities</p>
+                      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                        {agent.capabilities ?? "No capabilities listed for this agent."}
                       </p>
                     </div>
                     <div>
-                      <p className="font-semibold text-stone-800">Runtime</p>
-                      <ul className="mt-1 space-y-1 text-stone-700">
-                        <li>Adapter: {agent.adapterType || "Not specified"}</li>
-                        <li>Budget: {formatMoney(agent.budgetMonthlyCents)}</li>
-                        <li>
-                          Instructions: {agent.instructionsPath ? agent.instructionsPath : "None"}
-                        </li>
+                      <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem", fontFamily: "var(--font-mono)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Runtime</p>
+                      <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "4px", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                        <li>adapter: {agent.adapterType ?? "not specified"}</li>
+                        <li>budget: {formatMoney(agent.budgetMonthlyCents)}</li>
+                        <li>instructions: {agent.instructionsPath ?? "none"}</li>
                       </ul>
                     </div>
                     <div>
-                      <p className="font-semibold text-stone-800">Permissions</p>
-                      <ul className="mt-1 space-y-1 text-stone-700">
-                        <li>
-                          Create agents: {agent.permissions?.canCreateAgents ? "Yes" : "No"}
-                        </li>
-                        <li>
-                          Approve hires: {agent.permissions?.canApproveHires ? "Yes" : "No"}
-                        </li>
+                      <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem", fontFamily: "var(--font-mono)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Permissions</p>
+                      <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "4px", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                        <li>canCreateAgents: {agent.permissions?.canCreateAgents ? "true" : "false"}</li>
+                        <li>canApproveHires: {agent.permissions?.canApproveHires ? "true" : "false"}</li>
                       </ul>
                     </div>
                     <div>
-                      <p className="font-semibold text-stone-800">Skills</p>
+                      <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem", fontFamily: "var(--font-mono)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Skills</p>
                       {agent.skills?.length ? (
-                        <ul className="mt-2 flex flex-wrap gap-2">
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                           {agent.skills.map((skill, index) => (
-                            <li
-                              key={`${agent.slug}-${skill}-${index}`}
-                              className="rounded-full border border-stone-300 bg-stone-100 px-2 py-1 text-xs text-stone-700"
-                            >
+                            <span key={`${agent.slug}-${skill}-${index}`} className="gt-tag">
                               {skill}
-                            </li>
+                            </span>
                           ))}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-1 text-stone-700">No bundled skills listed.</p>
+                        <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>// no bundled skills</p>
                       )}
                     </div>
                   </div>
-                ) : null}
+                )}
               </article>
             );
           })}

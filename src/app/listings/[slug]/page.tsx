@@ -284,7 +284,7 @@ function renderInline(text: string): React.ReactNode[] {
 
     if (part.startsWith("`") && part.endsWith("`")) {
       nodes.push(
-        <code key={`${part}-${index}`} className="rounded bg-stone-100 px-1 py-0.5 text-sm">
+        <code key={`${part}-${index}`} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-muted)", borderRadius: "3px", padding: "1px 6px", fontSize: "0.8em", fontFamily: "var(--font-mono)", color: "var(--text-secondary)" }}>
           {part.slice(1, -1)}
         </code>
       );
@@ -293,7 +293,7 @@ function renderInline(text: string): React.ReactNode[] {
 
     if (part.startsWith("**") && part.endsWith("**")) {
       nodes.push(
-        <strong key={`${part}-${index}`} className="font-semibold text-stone-900">
+        <strong key={`${part}-${index}`} style={{ fontWeight: 600, color: "var(--text-primary)" }}>
           {part.slice(2, -2)}
         </strong>
       );
@@ -412,7 +412,7 @@ function renderMarkdown(markdown: string): React.ReactNode[] {
         index += 1;
       }
       nodes.push(
-        <ol key={`node-${key++}`} className="list-decimal space-y-1 pl-6 text-stone-700">
+        <ol key={`node-${key++}`} style={{ listStyleType: "decimal", paddingLeft: "1.5rem", display: "flex", flexDirection: "column" as const, gap: "4px", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
           {entries.map((entry, itemIndex) => (
             <li key={`${entry}-${itemIndex}`}>{renderInline(entry)}</li>
           ))}
@@ -435,7 +435,7 @@ function renderMarkdown(markdown: string): React.ReactNode[] {
     }
 
     nodes.push(
-      <p key={`node-${key++}`} className="text-stone-700">
+      <p key={`node-${key++}`} style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.7 }}>
         {renderInline(paragraph.join(" "))}
       </p>
     );
@@ -531,47 +531,70 @@ export default async function ListingDetailPage({
   const ratingValue = toNumber(listing.rating);
   const readme = listing.readmeMarkdown?.trim() || listing.description?.trim() || "";
 
+  const sectionStyle: React.CSSProperties = {
+    background: "var(--bg-card)",
+    border: "1px solid var(--border-subtle)",
+    borderRadius: "var(--radius-xl)",
+    padding: "2rem",
+    marginBottom: 0,
+  };
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.65rem",
+    fontWeight: 500,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: "var(--text-muted)",
+    marginBottom: "0.75rem",
+  };
+
+  const h2Style: React.CSSProperties = {
+    fontSize: "clamp(1.25rem, 2.5vw, 1.75rem)",
+    fontWeight: 700,
+    letterSpacing: "-0.03em",
+    color: "var(--text-primary)",
+  };
+
   return (
-    <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
-      <section className="relative overflow-hidden rounded-3xl border border-stone-300 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900 p-6 text-stone-100 sm:p-8">
-        <div className="absolute -right-6 top-4 h-36 w-36 rounded-full bg-amber-200/20 blur-3xl" />
-        <p className="text-xs uppercase tracking-[0.25em] text-stone-300">
-          1. Hero · {listingTypeLabel(listing.type)}
-        </p>
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-6">
-          <div className="max-w-3xl">
-            <h1 className="font-serif text-4xl leading-tight sm:text-5xl">{listing.title}</h1>
-            <p className="mt-3 text-base text-stone-200">
-              {listing.tagline || listing.description || "Team blueprint listing"}
+    <div style={{ padding: "3rem 0 6rem" }}>
+    <div className="gt-container" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* ── Hero ── */}
+      <section style={{ ...sectionStyle, position: "relative", overflow: "hidden" }}>
+        <div aria-hidden style={{ position: "absolute", top: "-30%", right: "-5%", width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.06), transparent 70%)", pointerEvents: "none" }} />
+        <p style={sectionLabelStyle}>01 — {listingTypeLabel(listing.type)}</p>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: "600px", flex: "1 1 300px" }}>
+            <h1 style={{ fontSize: "clamp(1.75rem, 4vw, 3rem)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: "0.75rem" }}>
+              {listing.title}
+            </h1>
+            <p style={{ fontSize: "0.9375rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "1rem" }}>
+              {listing.tagline ?? listing.description ?? "Team blueprint listing"}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
               {asStringArray(listing.categories).map((category, index) => (
-                <span
-                  key={`${category}-${index}`}
-                  className="rounded-full border border-stone-400/70 bg-stone-100/10 px-3 py-1 text-xs uppercase tracking-wide"
-                >
-                  {category}
-                </span>
+                <span key={`${category}-${index}`} className="gt-tag">{category}</span>
+              ))}
+              {asStringArray(listing.tags as unknown[]).map((tag, index) => (
+                <span key={`tag-${tag}-${index}`} className="gt-tag gt-tag-accent">{tag}</span>
               ))}
             </div>
           </div>
-          <div className="w-full max-w-xs rounded-2xl border border-stone-400/60 bg-stone-950/45 p-5">
-            <p className="text-sm text-stone-300">Price</p>
-            <p className="mt-1 font-serif text-4xl text-stone-100">
-              {listing.price > 0 ? moneyFormatter.format(listing.price / 100) : "Free"}
+          {/* Purchase card */}
+          <div style={{ width: "100%", maxWidth: "280px", flex: "0 0 auto", background: "var(--bg-elevated)", border: "1px solid var(--border-muted)", borderRadius: "var(--radius-lg)", padding: "1.5rem" }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.1em", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "4px" }}>Price</p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.04em", color: listing.price === 0 ? "var(--accent-green)" : "var(--text-primary)", marginBottom: "1rem" }}>
+              {listing.price > 0 ? moneyFormatter.format(listing.price / 100) : "FREE"}
             </p>
-            <Link
-              href="#install"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:bg-white"
-            >
+            <Link href="#install" className="gt-btn-primary" style={{ width: "100%", marginBottom: "1rem", fontSize: "0.8rem" }}>
               Install Blueprint
             </Link>
-            <div className="mt-4 rounded-xl border border-stone-500/50 bg-stone-100/5 p-3 text-sm">
-              <p className="font-semibold text-stone-100">{listing.creatorName ?? "Unknown"}</p>
-              <p className="text-stone-300">
-                Creator {listing.creatorVerified ? "verified" : "unverified"}
+            <div style={{ background: "var(--bg-base)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "0.75rem" }}>
+              <p style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.875rem", marginBottom: "4px" }}>{listing.creatorName ?? "Unknown"}</p>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginBottom: "4px" }}>
+                {listing.creatorVerified ? "✓ VERIFIED" : "COMMUNITY"}
               </p>
-              <p className="mt-2 text-stone-200">
+              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
                 {stars(ratingValue)} {ratingValue.toFixed(1)} · {listing.reviewCount} reviews
               </p>
             </div>
@@ -584,243 +607,209 @@ export default async function ListingDetailPage({
         reportingChain={blueprint.reportingChain}
       />
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-stone-50/90 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">4. Governance</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Approvals, budgets, escalation</h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-2xl border border-stone-300 bg-white/85 p-4">
-            <h3 className="font-semibold text-stone-900">Approval Rules</h3>
-            {blueprint.governance?.approvalRules?.length ? (
-              <ul className="mt-3 space-y-2 text-sm text-stone-700">
-                {blueprint.governance.approvalRules.map((rule, index) => (
-                  <li key={`rule-${index}`} className="rounded-xl bg-stone-100 px-3 py-2">
-                    <code className="text-xs">{JSON.stringify(rule)}</code>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm text-stone-600">No explicit approval rules were provided.</p>
-            )}
-          </article>
-
-          <article className="rounded-2xl border border-stone-300 bg-white/85 p-4">
-            <h3 className="font-semibold text-stone-900">Budget Defaults</h3>
-            {blueprint.governance?.budgetDefaults?.length ? (
-              <ul className="mt-3 space-y-2 text-sm text-stone-700">
-                {blueprint.governance.budgetDefaults.map((budget) => (
-                  <li key={budget.role} className="flex items-center justify-between gap-3">
-                    <span>{budget.role}</span>
-                    <span className="font-semibold">
-                      {moneyFormatter.format(budget.monthlyCents / 100)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm text-stone-600">No budget defaults were defined.</p>
-            )}
-          </article>
-
-          <article className="rounded-2xl border border-stone-300 bg-white/85 p-4">
-            <h3 className="font-semibold text-stone-900">Escalation Chain</h3>
-            {blueprint.governance?.escalationChain?.length ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {blueprint.governance.escalationChain.map((item, index) => (
-                  <span
-                    key={`${item}-${index}`}
-                    className="rounded-full border border-stone-300 bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-stone-600">No escalation chain was included.</p>
-            )}
-          </article>
+      {/* ── Governance ── */}
+      <section style={sectionStyle}>
+        <p style={sectionLabelStyle}>04 — GOVERNANCE</p>
+        <h2 style={{ ...h2Style, marginBottom: "1.25rem" }}>Approvals, budgets, escalation</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+          {[
+            {
+              title: "Approval Rules",
+              content: blueprint.governance?.approvalRules?.length ? (
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column" as const, gap: "6px", marginTop: "0.75rem" }}>
+                  {blueprint.governance.approvalRules.map((rule, index) => (
+                    <li key={`rule-${index}`} style={{ background: "var(--bg-base)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-sm)", padding: "6px 10px" }}>
+                      <code style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--text-muted)" }}>{JSON.stringify(rule)}</code>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>No explicit approval rules were provided.</p>,
+            },
+            {
+              title: "Budget Defaults",
+              content: blueprint.governance?.budgetDefaults?.length ? (
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column" as const, gap: "6px", marginTop: "0.75rem" }}>
+                  {blueprint.governance.budgetDefaults.map((budget) => (
+                    <li key={budget.role} style={{ display: "flex", justifyContent: "space-between", gap: "8px", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                      <span>{budget.role}</span>
+                      <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, color: "var(--text-primary)" }}>{moneyFormatter.format(budget.monthlyCents / 100)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>No budget defaults were defined.</p>,
+            },
+            {
+              title: "Escalation Chain",
+              content: blueprint.governance?.escalationChain?.length ? (
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px", marginTop: "0.75rem" }}>
+                  {blueprint.governance.escalationChain.map((item, index) => (
+                    <span key={`${item}-${index}`} className="gt-tag">{item}</span>
+                  ))}
+                </div>
+              ) : <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>No escalation chain was included.</p>,
+            },
+          ].map(({ title, content }) => (
+            <div key={title} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem" }}>
+              <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", letterSpacing: "-0.01em" }}>{title}</h3>
+              {content}
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-white/85 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">5. Included Projects</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Template workspace bundles</h2>
-        </div>
+      {/* ── Included Projects ── */}
+      <section style={sectionStyle}>
+        <p style={sectionLabelStyle}>05 — INCLUDED PROJECTS</p>
+        <h2 style={{ ...h2Style, marginBottom: "1.25rem" }}>Template workspace bundles</h2>
         {blueprint.projects.length ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
             {blueprint.projects.map((project) => (
-              <article key={project.name} className="rounded-2xl border border-stone-300 bg-stone-50 p-5">
-                <h3 className="font-serif text-2xl text-stone-900">{project.name}</h3>
-                <p className="mt-2 text-sm text-stone-700">
-                  {project.description || "No project description included."}
+              <article key={project.name} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1.25rem" }}>
+                <h3 style={{ fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em", marginBottom: "0.5rem" }}>{project.name}</h3>
+                <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "0.75rem", lineHeight: 1.6 }}>
+                  {project.description ?? "No project description included."}
                 </p>
-                <dl className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-stone-500">Workspace path</dt>
-                    <dd className="font-medium text-stone-900">
-                      {project.workspace?.cwd || "Not configured"}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-stone-500">Repository</dt>
-                    <dd className="font-medium text-stone-900">
-                      {project.workspace?.repoUrl || "None"}
-                    </dd>
-                  </div>
+                <dl style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {[
+                    { label: "Workspace path", value: project.workspace?.cwd ?? "Not configured" },
+                    { label: "Repository", value: project.workspace?.repoUrl ?? "None" },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "8px", fontSize: "0.75rem", borderTop: "1px solid var(--border-subtle)", paddingTop: "6px" }}>
+                      <dt style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>{label}</dt>
+                      <dd style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", fontWeight: 500 }}>{value}</dd>
+                    </div>
+                  ))}
                 </dl>
               </article>
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-stone-300 bg-stone-50 p-4 text-sm text-stone-700">
-            This listing does not include project templates.
+          <p style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem", fontSize: "0.8125rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+            // This listing does not include project templates.
           </p>
         )}
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-stone-50/90 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">6. README</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Rendered documentation</h2>
-        </div>
+      {/* ── README ── */}
+      <section style={sectionStyle}>
+        <p style={sectionLabelStyle}>06 — README</p>
+        <h2 style={{ ...h2Style, marginBottom: "1.25rem" }}>Rendered documentation</h2>
         {readme ? (
-          <article className="prose prose-stone max-w-none space-y-4">{renderMarkdown(readme)}</article>
+          <article style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.9rem", lineHeight: 1.75, color: "var(--text-secondary)" }}>
+            {renderMarkdown(readme)}
+          </article>
         ) : (
-          <p className="rounded-2xl border border-stone-300 bg-white/85 p-4 text-sm text-stone-700">
-            No README markdown has been published for this listing yet.
+          <p style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+            // No README markdown has been published for this listing yet.
           </p>
         )}
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-white/85 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">7. Reviews</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Ratings from operators</h2>
-        </div>
-
-        <div className="rounded-2xl border border-stone-300 bg-stone-50 p-4">
-          <p className="text-sm text-stone-600">Average rating</p>
-          <p className="mt-1 font-serif text-4xl text-stone-900">{ratingValue.toFixed(1)}</p>
-          <p className="text-sm text-stone-700">
-            {stars(ratingValue)} · {listing.reviewCount} published reviews · {listing.installCount} installs
+      {/* ── Reviews ── */}
+      <section style={sectionStyle}>
+        <p style={sectionLabelStyle}>07 — REVIEWS</p>
+        <h2 style={{ ...h2Style, marginBottom: "1.25rem" }}>Ratings from operators</h2>
+        <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-muted)", borderRadius: "var(--radius-md)", padding: "1rem", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <div>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "2.5rem", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1, color: "var(--text-primary)" }}>{ratingValue.toFixed(1)}</p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.1em", color: "var(--text-muted)", textTransform: "uppercase" }}>AVERAGE</p>
+          </div>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+            {stars(ratingValue)} · {listing.reviewCount} reviews · {listing.installCount} installs
           </p>
         </div>
-
         {reviewRows.length ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
             {reviewRows.map((review) => (
-              <article key={review.id} className="rounded-2xl border border-stone-300 bg-stone-50 p-5">
-                <p className="text-sm text-stone-700">
-                  {stars(review.rating)} {review.rating.toFixed(1)}
+              <article key={review.id} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1.25rem" }}>
+                <p style={{ fontSize: "0.9rem", color: "var(--accent-green)", marginBottom: "4px" }}>
+                  {stars(review.rating)} <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>{review.rating.toFixed(1)}</span>
                 </p>
-                <h3 className="mt-2 font-semibold text-stone-900">
-                  {review.title || "Review"}
+                <h3 style={{ fontSize: "0.9375rem", fontWeight: 600, letterSpacing: "-0.01em", marginBottom: "0.5rem" }}>
+                  {review.title ?? "Review"}
                 </h3>
-                <p className="mt-2 text-sm text-stone-700">{review.body || "No written details."}</p>
-                <p className="mt-3 text-xs text-stone-500">
-                  {review.authorName || "Anonymous"} · {formatTimestamp(review.createdAt)}{" "}
-                  {review.verifiedPurchase ? "· Verified purchase" : ""}
+                <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "0.75rem" }}>{review.body ?? "No written details."}</p>
+                <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
+                  {review.authorName ?? "ANONYMOUS"} · {formatTimestamp(review.createdAt)}{review.verifiedPurchase ? " · ✓ VERIFIED" : ""}
                 </p>
               </article>
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-stone-300 bg-stone-50 p-4 text-sm text-stone-700">
-            No reviews yet. Install count is {listing.installCount}, so early adopters can shape the first wave of feedback.
+          <p style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+            // No reviews yet. {listing.installCount} early installs — be the first to leave feedback.
           </p>
         )}
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-stone-300 bg-stone-50/90 p-6 sm:p-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-stone-500">8. Related Blueprints</p>
-          <h2 className="mt-2 font-serif text-3xl text-stone-900">Cross-sell suggestions</h2>
-        </div>
+      {/* ── Related ── */}
+      <section style={sectionStyle}>
+        <p style={sectionLabelStyle}>08 — RELATED BLUEPRINTS</p>
+        <h2 style={{ ...h2Style, marginBottom: "1.25rem" }}>More from this category</h2>
         {relatedRows.length ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
             {relatedRows.map((related) => (
               <Link
                 key={related.id}
                 href={`/listings/${related.slug}`}
-                className="group rounded-2xl border border-stone-300 bg-white/90 p-4 transition hover:border-stone-500"
+                className="gt-card"
+                style={{ padding: "1.25rem", textDecoration: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}
               >
-                <p className="text-xs uppercase tracking-[0.2em] text-stone-500">Related</p>
-                <h3 className="mt-2 font-serif text-2xl text-stone-900 group-hover:underline">
+                <span className="gt-label">RELATED</span>
+                <h3 style={{ fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em", color: "var(--text-primary)" }}>
                   {related.title}
                 </h3>
-                <p className="mt-2 text-sm text-stone-700">{related.tagline || "No tagline provided."}</p>
-                <p className="mt-3 text-sm font-semibold text-stone-900">
-                  {related.price > 0 ? moneyFormatter.format(related.price / 100) : "Free"}
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.5 }}>{related.tagline ?? "No tagline provided."}</p>
+                <p style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "0.9rem", color: related.price === 0 ? "var(--accent-green)" : "var(--text-primary)", marginTop: "auto" }}>
+                  {related.price > 0 ? moneyFormatter.format(related.price / 100) : "FREE"}
                 </p>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-stone-300 bg-white/85 p-4 text-sm text-stone-700">
-            No related listings published yet in this category.
+          <p style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1rem", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+            // No related listings published yet in this category.
           </p>
         )}
       </section>
 
-      <section
-        id="install"
-        className="rounded-3xl border border-stone-300 bg-white/85 p-6 sm:p-8"
-      >
-        <p className="text-xs uppercase tracking-[0.24em] text-stone-500">9. Creator Profile</p>
-        <div className="mt-3 grid gap-5 md:grid-cols-[0.35fr_0.65fr]">
-          <div className="rounded-2xl border border-stone-300 bg-stone-50 p-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-2xl font-semibold text-stone-100">
-              {(listing.creatorName || "C").slice(0, 1).toUpperCase()}
+      {/* ── Creator Profile ── */}
+      <section id="install" style={sectionStyle}>
+        <p style={sectionLabelStyle}>09 — CREATOR PROFILE</p>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(200px, 0.4fr) 1fr", gap: "1rem" }}>
+          <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1.25rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 48, height: 48, borderRadius: 8, background: "var(--text-primary)", color: "var(--bg-base)", fontSize: "1.25rem", fontWeight: 700, fontFamily: "var(--font-mono)", marginBottom: "0.75rem" }}>
+              {(listing.creatorName ?? "C").slice(0, 1).toUpperCase()}
             </div>
-            <h2 className="mt-3 font-serif text-2xl text-stone-900">{listing.creatorName}</h2>
-            <p className="text-sm text-stone-700">
-              {listing.creatorVerified ? "Verified creator" : "Community creator"}
+            <h2 style={{ fontSize: "1rem", fontWeight: 700, letterSpacing: "-0.01em", marginBottom: "2px" }}>{listing.creatorName}</h2>
+            <p style={{ fontSize: "0.75rem", color: listing.creatorVerified ? "var(--accent-green)" : "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "1rem" }}>
+              {listing.creatorVerified ? "✓ VERIFIED" : "COMMUNITY"}
             </p>
-            <Link
-              href={`/creators/${slugify(listing.creatorName || "creator")}`}
-              className="mt-4 inline-flex rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-900 transition hover:border-stone-500"
-            >
-              View full profile
+            <Link href={`/creators/${slugify(listing.creatorName ?? "creator")}`} className="gt-btn-ghost" style={{ fontSize: "0.75rem", padding: "6px 12px" }}>
+              View profile →
             </Link>
           </div>
-          <div className="space-y-3 rounded-2xl border border-stone-300 bg-stone-50 p-5">
-            <h3 className="font-semibold text-stone-900">About the creator</h3>
-            <p className="text-sm text-stone-700">
-              {listing.creatorBio || "No biography has been provided for this creator yet."}
+          <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", borderRadius: "var(--radius-md)", padding: "1.25rem" }}>
+            <h3 style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>About the creator</h3>
+            <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.7, marginBottom: "1rem" }}>
+              {listing.creatorBio ?? "No biography has been provided for this creator yet."}
             </p>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between gap-3 border-t border-stone-200 pt-2">
-                <dt className="text-stone-500">Listing version</dt>
-                <dd className="font-medium text-stone-900">{listing.version || "1.0.0"}</dd>
-              </div>
-              <div className="flex justify-between gap-3 border-t border-stone-200 pt-2">
-                <dt className="text-stone-500">Creator website</dt>
-                <dd className="font-medium text-stone-900">
-                  {listing.creatorWebsite ? (
-                    <a
-                      href={listing.creatorWebsite}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline decoration-stone-400 underline-offset-2 hover:decoration-stone-900"
-                    >
-                      {listing.creatorWebsite}
-                    </a>
-                  ) : (
-                    "Not linked"
-                  )}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3 border-t border-stone-200 pt-2">
-                <dt className="text-stone-500">Install momentum</dt>
-                <dd className="font-medium text-stone-900">{listing.installCount} installs</dd>
-              </div>
+            <dl style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+              {[
+                { label: "Version", value: listing.version ?? "1.0.0" },
+                { label: "Website", value: listing.creatorWebsite ?? "Not linked" },
+                { label: "Installs", value: `${listing.installCount} installs` },
+              ].map(({ label, value }) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "8px", fontSize: "0.75rem", borderTop: "1px solid var(--border-subtle)", padding: "8px 0" }}>
+                  <dt style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</dt>
+                  <dd style={{ fontFamily: "var(--font-mono)", color: "var(--text-secondary)", fontWeight: 500 }}>{value}</dd>
+                </div>
+              ))}
             </dl>
           </div>
         </div>
       </section>
-    </main>
+    </div>
+    </div>
   );
 }

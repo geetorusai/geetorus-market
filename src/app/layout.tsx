@@ -1,22 +1,38 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Plus_Jakarta_Sans, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-const headingFont = Fraunces({
-  variable: "--font-heading",
+// Drago Tools primary heading font
+const displayFont = Plus_Jakarta_Sans({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const bodyFont = Manrope({
+// Drago Tools secondary / body font
+const bodyFont = Space_Grotesk({
   variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Munder Difflin monospace — JetBrains Mono
+const monoFont = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "GeeTorus",
-  description: "Marketplace for Geetorus team blueprints and creator listings.",
+  title: "Geetorus Market — AI Engineering Blueprints",
+  description:
+    "Marketplace for Geetorus team blueprints, agent configurations, skills, and governance templates. Built by engineers, for engineers.",
+  keywords: ["ai agents", "team blueprints", "developer tools", "automation", "geetorus"],
 };
 
 export default function RootLayout({
@@ -27,11 +43,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${headingFont.variable} ${bodyFont.variable} bg-[radial-gradient(circle_at_top_right,_rgba(255,204,128,0.25),_transparent_45%),radial-gradient(circle_at_top_left,_rgba(202,213,255,0.22),_transparent_40%),#f4efe6] text-stone-900 antialiased`}
+        className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}
+        style={{
+          background: "var(--bg-base)",
+          color: "var(--text-primary)",
+          fontFamily: "var(--font-body)",
+        }}
       >
-        <div className="min-h-screen">
+        {/* Munder Difflin × Drago warm grid background */}
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(214, 197, 158, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(214, 197, 158, 0.03) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+          aria-hidden="true"
+        />
+        <div style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
           <Header />
-          {children}
+          <main style={{ flex: 1 }}>{children}</main>
           <Footer />
         </div>
       </body>
