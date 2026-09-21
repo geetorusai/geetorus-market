@@ -49,7 +49,7 @@
   --font-body:    "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 
-  /* ── Drago retro shadow system ── */
+  /* ── Geetorus 2D retro shadow system ── */
   --shadow-sm:   4px 4px 0px 0px #000000;   /* --retro-shadow-sm */
   --shadow-md:   8px 8px 0px 0px #000000;   /* --retro-shadow */
   --shadow-warm: 4px 4px 0px 0px #1a1320;   /* warm ink shadow variant */
@@ -204,7 +204,7 @@ code, pre, .mono {
 
 /* ─── Buttons ────────────────────────────────────────────────────────────── */
 
-/* Primary — Drago white retro button */
+/* Primary — Geetorus 2D retro button */
 .gt-btn-primary {
   display: inline-flex;
   align-items: center;

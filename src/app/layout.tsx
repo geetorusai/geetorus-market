@@ -4,7 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-// Drago Tools primary heading font
+// Primary heading font
 const displayFont = Plus_Jakarta_Sans({
   variable: "--font-display",
   subsets: ["latin"],
@@ -12,7 +12,7 @@ const displayFont = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-// Drago Tools secondary / body font
+// Secondary / body font
 const bodyFont = Space_Grotesk({
   variable: "--font-body",
   subsets: ["latin"],
